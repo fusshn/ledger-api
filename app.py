@@ -10,7 +10,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from werkzeug.exceptions import HTTPException, NotFound
 
 from database_url import normalize_database_url
@@ -118,6 +118,13 @@ def register_error_handlers(app):
         elif constraint:
             errors = {"constraint": constraint}
         return api_response(status, message, {"errors": errors} if errors else None)
+
+    @app.errorhandler(OperationalError)
+    def handle_operational_error(_e):
+        # 連不上資料庫、連線中斷或逾時。原始錯誤只寫進伺服器日誌。
+        db.session.rollback()
+        app.logger.exception("資料庫操作失敗")
+        return api_response(500, "資料庫暫時連不上，請稍後再試")
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(e):
