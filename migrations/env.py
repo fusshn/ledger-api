@@ -17,9 +17,7 @@ from sqlalchemy import create_engine, pool
 
 from database_url import normalize_database_url
 from extensions import db
-
-# 之後建立模型時，要在這裡 import 模型模組，
-# 讓資料表註冊到 db.metadata，autogenerate 才看得到。
+import models  # noqa: F401  載入模型，讓資料表註冊到 db.metadata，autogenerate 才看得到
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 
